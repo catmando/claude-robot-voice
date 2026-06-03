@@ -1,99 +1,56 @@
 #!/bin/bash
+# Installs claude-robot-voice into ~/.claude/
+# Speaks a funny phrase when Claude needs your input (AskUserQuestion or tool approval).
+
 set -e
 
-# claude-robot-voice installer
-# Gives Claude Code a funny robot voice using macOS say + Claude hooks
-
-CLAUDE_DIR="$HOME/.claude"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLAUDE_DIR="$HOME/.claude"
+SETTINGS="$CLAUDE_DIR/settings.json"
 
-# Check we're on macOS
 if [[ "$(uname)" != "Darwin" ]]; then
   echo "Sorry, this requires macOS (uses the 'say' command)."
   exit 1
 fi
 
-# Check Claude settings file exists
 mkdir -p "$CLAUDE_DIR"
 
 echo "Installing claude-robot-voice..."
 
-# Copy scripts
-cp "$SCRIPT_DIR/speak_progress.sh" "$CLAUDE_DIR/speak_progress.sh"
-cp "$SCRIPT_DIR/speak_thinking.sh" "$CLAUDE_DIR/speak_thinking.sh"
-chmod +x "$CLAUDE_DIR/speak_progress.sh"
-chmod +x "$CLAUDE_DIR/speak_thinking.sh"
+cp "$SCRIPT_DIR/speak_waiting.sh" "$CLAUDE_DIR/speak_waiting.sh"
+chmod +x "$CLAUDE_DIR/speak_waiting.sh"
+echo "  ✓ Installed speak_waiting.sh"
 
-echo "  ✓ Installed speak_progress.sh"
-echo "  ✓ Installed speak_thinking.sh"
+# Merge hooks into settings.json using Ruby
+ruby - "$SETTINGS" "$CLAUDE_DIR/speak_waiting.sh" <<'RUBY'
+require 'json'
 
-# Merge hooks into existing settings.json without clobbering other settings
-SETTINGS="$CLAUDE_DIR/settings.json"
+settings_path = ARGV[0]
+script_path   = ARGV[1]
 
-python3 - "$SETTINGS" "$CLAUDE_DIR" <<'PYEOF'
-import json, sys, os
+settings = File.exist?(settings_path) ? JSON.parse(File.read(settings_path)) : {}
+settings["hooks"] ||= {}
 
-settings_path = sys.argv[1]
-claude_dir = sys.argv[2]
+hook_entry = { "type" => "command", "command" => script_path }
 
-# Load existing settings
-existing = {}
-if os.path.exists(settings_path):
-    try:
-        with open(settings_path) as f:
-            existing = json.load(f)
-    except:
-        pass
+# AskUserQuestion fires via PreToolUse with matcher
+settings["hooks"]["PreToolUse"] ||= []
+unless settings["hooks"]["PreToolUse"].any? { |e| e["matcher"] == "AskUserQuestion" && e["hooks"]&.any? { |h| h["command"] == script_path } }
+  settings["hooks"]["PreToolUse"] << { "matcher" => "AskUserQuestion", "hooks" => [hook_entry] }
+end
 
-# Build hook entries
-hooks = {
-    "PreToolUse": [
-        {
-            "matcher": "",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": os.path.join(claude_dir, "speak_progress.sh")
-                }
-            ]
-        }
-    ],
-    "PostToolUse": [
-        {
-            "matcher": "",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": os.path.join(claude_dir, "speak_thinking.sh")
-                }
-            ]
-        }
-    ]
-}
+# PermissionRequest fires its own event
+settings["hooks"]["PermissionRequest"] ||= []
+unless settings["hooks"]["PermissionRequest"].any? { |e| e["hooks"]&.any? { |h| h["command"] == script_path } }
+  settings["hooks"]["PermissionRequest"] << { "hooks" => [hook_entry] }
+end
 
-# Merge — preserve any existing hooks for other events
-existing_hooks = existing.get("hooks", {})
-existing_hooks.update(hooks)
-existing["hooks"] = existing_hooks
+File.write(settings_path, JSON.pretty_generate(settings) + "\n")
+RUBY
 
-with open(settings_path, "w") as f:
-    json.dump(existing, f, indent=2)
-    f.write("\n")
-
-print("  ✓ Updated ~/.claude/settings.json")
-PYEOF
-
+echo "  ✓ Hooks added to ~/.claude/settings.json"
 echo ""
-echo "All done! BEEP BOOP. Claude will now narrate its work in a robot voice."
+echo "To set a voice for a project, create .claude/stop-messages.yml in your project root."
+echo "See stop-messages.yml.example for the format."
 echo ""
-echo "Voices by task:"
-echo "  Git       → Zarvox   (robotic precision)"
-echo "  Bash      → Fred     (gruff old-timer)"
-echo "  Reading   → Cellos   (dramatic)"
-echo "  Writing   → Organ    (grand)"
-echo "  Editing   → Bells    (surgical)"
-echo "  Searching → Superstar"
-echo "  Agents    → Trinoids (alien minion)"
-echo "  Thinking  → random weird voice"
-echo ""
-echo "To uninstall, run: uninstall.sh"
+echo "Done! Claude will now speak when it needs your input."

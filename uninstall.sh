@@ -1,41 +1,36 @@
 #!/bin/bash
-set -e
+# Removes claude-robot-voice hooks and script from ~/.claude/
 
 CLAUDE_DIR="$HOME/.claude"
+SETTINGS="$CLAUDE_DIR/settings.json"
+SCRIPT="$CLAUDE_DIR/speak_waiting.sh"
 
 echo "Uninstalling claude-robot-voice..."
 
-# Remove scripts
-rm -f "$CLAUDE_DIR/speak_progress.sh"
-rm -f "$CLAUDE_DIR/speak_thinking.sh"
-echo "  ✓ Removed speak scripts"
+rm -f "$SCRIPT"
+echo "  ✓ Removed speak_waiting.sh"
 
-# Remove hooks from settings.json
-python3 - "$CLAUDE_DIR/settings.json" <<'PYEOF'
-import json, sys, os
+if [ -f "$SETTINGS" ]; then
+  ruby - "$SETTINGS" "$SCRIPT" <<'RUBY'
+require 'json'
 
-settings_path = sys.argv[1]
-if not os.path.exists(settings_path):
-    print("  ✓ Nothing to remove from settings.json")
-    sys.exit(0)
+settings_path = ARGV[0]
+script_path   = ARGV[1]
 
-with open(settings_path) as f:
-    existing = json.load(f)
+settings = JSON.parse(File.read(settings_path))
+hooks = settings["hooks"] || {}
 
-hooks = existing.get("hooks", {})
-hooks.pop("PreToolUse", None)
-hooks.pop("PostToolUse", None)
-if not hooks:
-    existing.pop("hooks", None)
-else:
-    existing["hooks"] = hooks
+hooks["PreToolUse"]&.reject! { |e| e["hooks"]&.any? { |h| h["command"] == script_path } }
+hooks["PermissionRequest"]&.reject! { |e| e["hooks"]&.any? { |h| h["command"] == script_path } }
 
-with open(settings_path, "w") as f:
-    json.dump(existing, f, indent=2)
-    f.write("\n")
+hooks.delete_if { |_, v| v.empty? }
+settings["hooks"] = hooks
+settings.delete("hooks") if hooks.empty?
 
-print("  ✓ Removed hooks from ~/.claude/settings.json")
-PYEOF
+File.write(settings_path, JSON.pretty_generate(settings) + "\n")
+RUBY
+  echo "  ✓ Removed hooks from ~/.claude/settings.json"
+fi
 
 echo ""
-echo "Uninstalled. Claude is now silent and sad. 🤖"
+echo "Uninstalled. Claude is silent again."
