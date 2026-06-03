@@ -1,3 +1,25 @@
+# Fun/character voices (run `say -v '?'` to see all installed voices):
+#
+#   Zarvox    — robotic, classic sci-fi computer
+#   Fred      — gruff old-school Mac voice
+#   Trinoids  — alien robot minion
+#   Bahh      — sheep
+#   Bells     — ethereal bell tones
+#   Boing     — springy and bouncy
+#   Bubbles   — bubbly and cheerful
+#   Cellos    — dramatic cello tones
+#   Organ     — grand church organ
+#   Jester    — clownish
+#   Junior    — small child
+#   Kathy     — classic Mac female
+#   Ralph     — nasal and grumpy
+#   Superstar — breathless enthusiasm
+#   Whisper   — hushed and sneaky
+#   Wobble    — wobbly and unstable
+#   Albert    — old man muttering
+#   Bad News  — doom and gloom
+#   Good News — relentlessly upbeat
+
 voice: Fred
 min_seconds: 3
 phrases:
