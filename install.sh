@@ -18,8 +18,10 @@ mkdir -p "$CLAUDE_DIR"
 echo "Installing claude-robot-voice..."
 
 cp "$SCRIPT_DIR/speak_waiting.sh" "$CLAUDE_DIR/speak_waiting.sh"
-chmod +x "$CLAUDE_DIR/speak_waiting.sh"
+cp "$SCRIPT_DIR/speak_reset_timer.sh" "$CLAUDE_DIR/speak_reset_timer.sh"
+chmod +x "$CLAUDE_DIR/speak_waiting.sh" "$CLAUDE_DIR/speak_reset_timer.sh"
 echo "  ✓ Installed speak_waiting.sh"
+echo "  ✓ Installed speak_reset_timer.sh"
 
 # Merge hooks into settings.json using Ruby
 ruby - "$SETTINGS" "$CLAUDE_DIR/speak_waiting.sh" <<'RUBY'
@@ -43,6 +45,14 @@ end
 settings["hooks"]["PermissionRequest"] ||= []
 unless settings["hooks"]["PermissionRequest"].any? { |e| e["hooks"]&.any? { |h| h["command"] == script_path } }
   settings["hooks"]["PermissionRequest"] << { "hooks" => [hook_entry] }
+end
+
+# UserPromptSubmit resets the cooldown timer when the user responds
+reset_path = File.join(File.dirname(script_path), "speak_reset_timer.sh")
+reset_entry = { "type" => "command", "command" => reset_path }
+settings["hooks"]["UserPromptSubmit"] ||= []
+unless settings["hooks"]["UserPromptSubmit"].any? { |e| e["hooks"]&.any? { |h| h["command"] == reset_path } }
+  settings["hooks"]["UserPromptSubmit"] << { "hooks" => [reset_entry] }
 end
 
 File.write(settings_path, JSON.pretty_generate(settings) + "\n")

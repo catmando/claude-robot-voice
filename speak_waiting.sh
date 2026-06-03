@@ -54,11 +54,10 @@ if [ -z "$PHRASE" ]; then
   PHRASE="${FALLBACKS[$((RANDOM % ${#FALLBACKS[@]}))]}"
 fi
 
-# Check cooldown
+# Check cooldown — timer resets when user responds (see speak_reset_timer.sh)
 NOW=$(date +%s)
 LAST=0
 [ -f "$TIMESTAMP_FILE" ] && LAST=$(cat "$TIMESTAMP_FILE" 2>/dev/null || echo 0)
-echo "$NOW" > "$TIMESTAMP_FILE"
 
 ELAPSED=$(( NOW - LAST ))
 if [ "$ELAPSED" -ge "$MIN_SECONDS" ]; then
