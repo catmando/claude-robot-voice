@@ -1,4 +1,5 @@
 voice: Fred
+min_seconds: 3
 phrases:
   - Hey boss, I need your help here
   - I am the only one working here?
