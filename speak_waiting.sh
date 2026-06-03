@@ -61,5 +61,6 @@ LAST=0
 
 ELAPSED=$(( NOW - LAST ))
 if [ "$ELAPSED" -ge "$MIN_SECONDS" ]; then
+  echo "$NOW" > "$TIMESTAMP_FILE"
   say -v "$VOICE" "$PHRASE" &
 fi
