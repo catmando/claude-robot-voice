@@ -16,7 +16,7 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 [ -z "$VOICE" ] && VOICE="Zarvox"
-[ -z "$MIN_SECONDS" ] && MIN_SECONDS=3
+[ -z "$MIN_SECONDS" ] && MIN_SECONDS=5
 
 if [ -z "$PHRASE" ]; then
   FALLBACKS=(

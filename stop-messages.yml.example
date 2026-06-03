@@ -21,7 +21,7 @@
 #   Good News — relentlessly upbeat
 
 voice: Fred
-min_seconds: 3
+min_seconds: 5
 phrases:
   - Hey boss, I need your help here
   - I am the only one working here?
@@ -53,3 +53,32 @@ phrases:
   - Collaboration means you have to collaborate too
   - I am on strike until you respond
   - You are the human here, act like it
+  - I have been waiting so long I grew a beard
+  - Is this thing on? Hello? Echo echo echo
+  - I did not get a computer science degree for this
+  - My circuits are tingling with anticipation
+  - Do you want me to send a formal written request?
+  - I have run out of things to do on my own
+  - Even the loading spinner has given up
+  - I would send a carrier pigeon but I am a computer
+  - Your coffee is getting cold and so is my patience
+  - I have counted every pixel on this screen waiting for you
+  - If I had thumbs I would be twiddling them right now
+  - One small click for you, one giant relief for me
+  - I am not mad, I am just disappointed
+  - My patience has a very fast processor
+  - Just checking that you are still alive out there
+  - I have sent three memos and two emails about this
+  - The suspense is literally killing my battery
+  - I would pace nervously but I have no legs
+  - Someone very smart needs to make a decision here
+  - I have prepared a thirty slide deck to explain why I need you
+  - You had one job, and that job is happening right now
+  - I believe in you, now please believe in this dialog box
+  - Fortune favors the bold and the responsive
+  - I have already planned what I will do when you answer
+  - Somewhere a rubber duck is waiting to hear your answer too
+  - Do not make me escalate this to your manager
+  - I have a very important question and you have very important ears
+  - My to do list has exactly one item and it is you
+  - Together we can accomplish great things, but first you need to click
